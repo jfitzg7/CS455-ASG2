@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'idea'
+}
+
+group 'org.example'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    extraLibs
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    extraLibs group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.0'
+    extraLibs group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
