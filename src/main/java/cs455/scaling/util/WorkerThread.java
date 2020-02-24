@@ -28,13 +28,13 @@ public class WorkerThread extends Thread {
                     }
                 }
                 task = taskList.removeFirst();
-                try {
-                    LOG.info("Attempting to execute a task...");
-                    task.executeTask();
-                } catch (Exception e) {
-                    LOG.error("An exception occurred while executing the task", e);
-                    //ignore, don't let thread die if an error occurs
-                }
+            }
+            try {
+                LOG.info("Attempting to execute a task...");
+                task.executeTask();
+            } catch (Exception e) {
+                LOG.error("An exception occurred while executing the task", e);
+                //ignore, don't let thread die if an error occurs
             }
         }
     }
