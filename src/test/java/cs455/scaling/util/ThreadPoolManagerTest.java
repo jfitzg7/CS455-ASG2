@@ -23,7 +23,7 @@ class ThreadPoolManagerTest {
     public void ThreadPoolManagerTestTaskTest() {
         for (int i=0; i < 100; i++) {
             TestTask testTask = new TestTask(i);
-            threadPoolManager.addNewTaskToTaskList(testTask);
+            threadPoolManager.addNewTaskToWorkList(testTask);
         }
 
         try {
@@ -35,11 +35,11 @@ class ThreadPoolManagerTest {
 
     @Test
     public void ThreadPoolManagerBatchTaskTest() {
-        ArrayList<Batch> batchList = RandomBatchGenerator.generateAListOfBatches(100, 20);
+        ArrayList<Batch> batchList = RandomBatchGenerator.generateAListOfBatches(5, 20);
 
         for(Batch batch : batchList) {
             BatchTask batchTask = new BatchTask(batch);
-            threadPoolManager.addNewTaskToTaskList(batchTask);
+            threadPoolManager.addNewTaskToWorkList(batchTask);
         }
 
         try {

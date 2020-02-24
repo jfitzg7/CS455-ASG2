@@ -6,21 +6,21 @@ import java.util.LinkedList;
 
 public class ThreadPoolManager {
     private final ThreadPool threadPool;
-    private final LinkedList<Task> taskList;
+    private final LinkedList<Task> workList;
 
     public ThreadPoolManager(int threadPoolSize) {
-        this.taskList = new LinkedList<>();
+        this.workList = new LinkedList<>();
         this.threadPool = new ThreadPool(threadPoolSize);
     }
 
     public void startThreadsInThreadPool() {
-        threadPool.initializeWorkerThreads(taskList);
+        threadPool.initializeWorkerThreads(workList);
     }
 
-    public void addNewTaskToTaskList(Task task) {
-        synchronized (taskList) {
-            taskList.addLast(task);
-            taskList.notify();
+    public void addNewTaskToWorkList(Task task) {
+        synchronized (workList) {
+            workList.addLast(task);
+            workList.notify();
         }
     }
 }

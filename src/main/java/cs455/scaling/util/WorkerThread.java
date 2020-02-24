@@ -10,24 +10,24 @@ public class WorkerThread extends Thread {
 
     private Logger LOG = LogManager.getLogger(WorkerThread.class);
 
-    private final LinkedList<Task> taskList;
+    private final LinkedList<Task> workList;
 
     public WorkerThread(LinkedList<Task> taskList) {
-        this.taskList = taskList;
+        this.workList = taskList;
     }
 
     public void run() {
         Task task;
         while (true) {
-            synchronized (taskList) {
-                while (taskList.isEmpty()) {
+            synchronized (workList) {
+                while (workList.isEmpty()) {
                     try {
-                        taskList.wait();
+                        workList.wait();
                     } catch (InterruptedException e) {
                         LOG.error("The wait() call was interrupted", e);
                     }
                 }
-                task = taskList.removeFirst();
+                task = workList.removeFirst();
             }
             try {
                 LOG.info("Attempting to execute a task...");
