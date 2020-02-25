@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -54,7 +55,7 @@ public class ReadTask implements Task {
 
         else {
             byte[] receivedData = new byte[8000];
-            buffer.rewind();
+            ((Buffer) buffer).rewind();
             LOG.debug("Buffer = " + buffer);
             buffer.get(receivedData);
             BigInteger hashInt = new BigInteger(1, receivedData);
