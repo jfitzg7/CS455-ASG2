@@ -1,5 +1,7 @@
 package cs455.scaling.task;
 
+import cs455.scaling.util.Batch;
+import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,10 +18,14 @@ public class ReadTask implements Task {
 
     private SelectionKey key;
     private Selector selector;
+    private Batch batch;
+    private ThreadPoolManager threadPoolManager;
 
-    public ReadTask(Selector selector, SelectionKey key) {
+    public ReadTask(Selector selector, SelectionKey key, Batch batch, ThreadPoolManager threadPoolManager) {
         this.key = key;
         this.selector = selector;
+        this.batch = batch;
+        this.threadPoolManager = threadPoolManager;
     }
 
     @Override
@@ -37,6 +43,7 @@ public class ReadTask implements Task {
         } catch (IOException e) {
             LOG.error("An error occurred while reading data from a client channel", e);
         }
+
         if (bytesRead == -1) {
             try {
                 clientChannel.close();
@@ -44,6 +51,7 @@ public class ReadTask implements Task {
                 LOG.error("An error occurred while trying to close the client channel", e);
             }
         }
+
         else {
             byte[] receivedData = new byte[8000];
             buffer.rewind();
@@ -59,6 +67,14 @@ public class ReadTask implements Task {
             //wakeup the selector other wise it will lead to dead lock
             //the interest set of this channel's key will not be updated if the selector is currently blocking
             selector.wakeup();
+            synchronized(batch) {
+                if (!batch.isBatchFull()) {
+                    batch.addDataToBatch(receivedData);
+                }
+                else {
+
+                }
+            }
         }
     }
 }

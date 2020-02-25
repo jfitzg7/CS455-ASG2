@@ -2,6 +2,7 @@ package cs455.scaling.server;
 
 import cs455.scaling.task.ReadTask;
 import cs455.scaling.task.RegisterTask;
+import cs455.scaling.util.Batch;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +20,10 @@ public class Server {
 
     private static Logger LOG = LogManager.getLogger(Server.class);
 
+    private static Batch batch;
+
     public static void main(String[] args) throws IOException {
+        batch = new Batch(10);
         ThreadPoolManager threadPoolManager = new ThreadPoolManager(10);
         threadPoolManager.startThreadsInThreadPool();
         Selector selector = Selector.open();
@@ -57,7 +61,7 @@ public class Server {
                     LOG.debug("Removing read interest from a client channel");
                     key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                     LOG.debug("Constructing new ReadTask");
-                    ReadTask readTask = new ReadTask(selector, key);
+                    ReadTask readTask = new ReadTask(selector, key, batch, threadPoolManager);
                     threadPoolManager.addNewTaskToWorkList(readTask);
                 }
 
