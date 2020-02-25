@@ -18,7 +18,7 @@ public class Client {
     private SocketChannel clientSocket;
     private LinkedList<String> pendingHashes;
 
-    public Client() throws IOException {
+    public Client() {
         pendingHashes = new LinkedList<>();
     }
 
@@ -29,13 +29,12 @@ public class Client {
                 int portNumber = Integer.parseInt(args[1]);
                 Client client = new Client();
                 client.establishSocketChannelWithServer(hostName, portNumber);
-                Thread.sleep(10000);
-                //client.configureClientToBeNonBlocking();
-                //int messageRate = Integer.parseInt(args[2]);
-                //client.startSendingMessagesToServer(messageRate);
-                //client.listenForResponsesFromServer();
+                client.configureClientToBeNonBlocking();
+                int messageRate = Integer.parseInt(args[2]);
+                client.startSendingMessagesToServer(messageRate);
+                client.listenForResponsesFromServer();
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

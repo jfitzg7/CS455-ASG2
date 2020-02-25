@@ -11,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -46,13 +47,17 @@ public class Server {
                 }
 
                 if (key.isAcceptable()) {
+                    SocketChannel clientSocket = serverSocket.accept();
                     LOG.debug("Constructing new RegisterTask");
-                    RegisterTask registerTask = new RegisterTask(selector, serverSocket);
+                    RegisterTask registerTask = new RegisterTask(selector, clientSocket);
                     threadPoolManager.addNewTaskToWorkList(registerTask);
                 }
 
                 if (key.isReadable()) {
-                    ReadTask readTask = new ReadTask(key);
+                    LOG.debug("Removing read interest from a client channel");
+                    key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
+                    LOG.debug("Constructing new ReadTask");
+                    ReadTask readTask = new ReadTask(selector, key);
                     threadPoolManager.addNewTaskToWorkList(readTask);
                 }
 
