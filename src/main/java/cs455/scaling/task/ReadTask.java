@@ -56,8 +56,9 @@ public class ReadTask implements Task {
             LOG.debug("Interest set before: " + key.interestOps());
             key.interestOps(key.interestOps() | SelectionKey.OP_READ);
             LOG.debug("Interest set after: " + key.interestOps());
-            //wakeup the selector other wise it will lead to dead lock
-            //the interest set of this channel's key will not be updated if the selector is currently blocking
+            /* wakeup the selector other wise it will lead to dead lock because
+               the interest set of this channel's key will not be updated if
+               the selector is currently blocking */
             selector.wakeup();
         }
     }
