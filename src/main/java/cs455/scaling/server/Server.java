@@ -49,42 +49,44 @@ public class Server {
             LOG.debug("Lock acquired and subsequently released...");
 
             LOG.debug("Waiting for activity...");
-            selector.select();
+            int keysReady = selector.select();
             LOG.debug("Activity detected...");
 
-            Set<SelectionKey> selectedKeys = selector.selectedKeys();
-            LOG.debug("selected keys = " + selectedKeys.toString());
+            if (keysReady > 0) {
 
-            Iterator<SelectionKey> iter = selectedKeys.iterator();
-            while(iter.hasNext()) {
-                SelectionKey key = iter.next();
+                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                LOG.debug("selected keys = " + selectedKeys.toString());
 
-                if (key.isValid() == false) {
-                    continue;
-                }
+                Iterator<SelectionKey> iter = selectedKeys.iterator();
+                while (iter.hasNext()) {
+                    SelectionKey key = iter.next();
 
-                if (key.isAcceptable()) {
-                    ServerSocketAttachment attachment = (ServerSocketAttachment) key.attachment();
-                    if (!attachment.isQueuedForAccept) {
-                        LOG.debug("Constructing new RegisterTask");
-                        RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock);
-                        attachment.isQueuedForAccept = true;
-                        threadPoolManager.addNewTaskToWorkList(registerTask);
+                    if (key.isValid() == false) {
+                        continue;
                     }
-                    else {
-                        LOG.warn("The server socket is already trying to accept a connection!");
+
+                    if (key.isAcceptable()) {
+                        ServerSocketAttachment attachment = (ServerSocketAttachment) key.attachment();
+                        if (!attachment.isQueuedForAccept) {
+                            LOG.debug("Constructing new RegisterTask");
+                            RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock);
+                            attachment.isQueuedForAccept = true;
+                            threadPoolManager.addNewTaskToWorkList(registerTask);
+                        } else {
+                            LOG.warn("The server socket is already trying to accept a connection!");
+                        }
                     }
-                }
 
-                if (key.isReadable()) {
-                    LOG.debug("Removing read interest from a client channel");
-                    key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
-                    LOG.debug("Constructing new ReadTask");
-                    ReadTask readTask = new ReadTask(selector, key, batch, threadPoolManager);
-                    threadPoolManager.addNewTaskToWorkList(readTask);
-                }
+                    if (key.isReadable()) {
+                        LOG.debug("Removing read interest from a client channel");
+                        key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
+                        LOG.debug("Constructing new ReadTask");
+                        ReadTask readTask = new ReadTask(selector, key, batch, threadPoolManager);
+                        threadPoolManager.addNewTaskToWorkList(readTask);
+                    }
 
-                iter.remove();
+                    iter.remove();
+                }
             }
         }
     }
