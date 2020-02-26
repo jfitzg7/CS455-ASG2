@@ -21,6 +21,7 @@ public class BatchTask implements Task {
 
     @Override
     public void executeTask() {
+        LOG.info("Executing a batch task");
         int numberOfItemsInBatch = batch.sizeOfDataList();
         for (int i=0; i < numberOfItemsInBatch; i++) {
             byte[] data = batch.removeDataFromBatch();

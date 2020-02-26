@@ -28,4 +28,17 @@ public class Batch {
     public byte[] removeDataFromBatch() {
         return dataList.removeFirst();
     }
+
+    public boolean isBatchFull() {
+        if (dataList.size() >= batchSize) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void clearBatch() {
+        dataList.clear();
+    }
 }
