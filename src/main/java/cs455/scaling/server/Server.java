@@ -32,36 +32,39 @@ public class Server {
 
         while(true) {
             LOG.debug("Waiting for activity...");
-            selector.select();
+            int keysReady = selector.select();
             LOG.debug("Activity detected...");
 
-            Set<SelectionKey> selectedKeys = selector.selectedKeys();
-            LOG.debug("selected keys = " + selectedKeys.toString());
+            if (keysReady > 0) {
 
-            Iterator<SelectionKey> iter = selectedKeys.iterator();
-            while(iter.hasNext()) {
-                SelectionKey key = iter.next();
+                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                LOG.debug("selected keys = " + selectedKeys.toString());
 
-                if (key.isValid() == false) {
-                    continue;
+                Iterator<SelectionKey> iter = selectedKeys.iterator();
+                while (iter.hasNext()) {
+                    SelectionKey key = iter.next();
+
+                    if (key.isValid() == false) {
+                        continue;
+                    }
+
+                    if (key.isAcceptable()) {
+                        SocketChannel clientSocket = serverSocket.accept();
+                        LOG.debug("Constructing new RegisterTask");
+                        RegisterTask registerTask = new RegisterTask(selector, clientSocket);
+                        threadPoolManager.addNewTaskToWorkList(registerTask);
+                    }
+
+                    if (key.isReadable()) {
+                        LOG.debug("Removing read interest from a client channel");
+                        key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
+                        LOG.debug("Constructing new ReadTask");
+                        ReadTask readTask = new ReadTask(selector, key);
+                        threadPoolManager.addNewTaskToWorkList(readTask);
+                    }
+
+                    iter.remove();
                 }
-
-                if (key.isAcceptable()) {
-                    SocketChannel clientSocket = serverSocket.accept();
-                    LOG.debug("Constructing new RegisterTask");
-                    RegisterTask registerTask = new RegisterTask(selector, clientSocket);
-                    threadPoolManager.addNewTaskToWorkList(registerTask);
-                }
-
-                if (key.isReadable()) {
-                    LOG.debug("Removing read interest from a client channel");
-                    key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
-                    LOG.debug("Constructing new ReadTask");
-                    ReadTask readTask = new ReadTask(selector, key);
-                    threadPoolManager.addNewTaskToWorkList(readTask);
-                }
-
-                iter.remove();
             }
         }
     }
