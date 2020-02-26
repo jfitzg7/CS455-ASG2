@@ -6,17 +6,22 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class ClientSendMessageThread implements Runnable {
 
     private Logger LOG = LogManager.getLogger(ClientSendMessageThread.class);
+
     private SocketChannel clientSocket;
     private final int messageRate;
+    private LinkedList<byte[]> pendingHashes;
 
-    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate) {
+    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<byte[]> pendingHashes) {
         this.clientSocket = clientSocket;
         this.messageRate = messageRate;
+        this.pendingHashes = pendingHashes;
     }
 
     @Override
@@ -27,6 +32,10 @@ public class ClientSendMessageThread implements Runnable {
                 Random rand = new Random();
                 byte[] randomData = new byte[8000];
                 rand.nextBytes(randomData);
+                byte[] hash = Hashing.SHA1FromBytes(randomData);
+                synchronized (pendingHashes) {
+                    pendingHashes.addLast(hash);
+                }
                 ByteBuffer sendBuffer = ByteBuffer.wrap(randomData);
                 LOG.debug("Sending message to the server...");
                 while (sendBuffer.hasRemaining()) {

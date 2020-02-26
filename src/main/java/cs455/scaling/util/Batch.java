@@ -3,7 +3,7 @@ package cs455.scaling.util;
 import java.util.LinkedList;
 
 public class Batch {
-    private final LinkedList<byte[]> dataList;
+    private final LinkedList<DataAndSelectionKeyPair> dataList;
     private final int batchSize;
 
     public Batch(int batchSize) {
@@ -11,9 +11,9 @@ public class Batch {
         this.batchSize = batchSize;
     }
 
-    public boolean addDataToBatch(byte[] data) {
+    public boolean addDataToBatch(DataAndSelectionKeyPair pair) {
         if (dataList.size() < batchSize) {
-            dataList.addLast(data);
+            dataList.addLast(pair);
             return true;
         }
         else {
@@ -25,7 +25,7 @@ public class Batch {
         return dataList.size();
     }
 
-    public byte[] removeDataFromBatch() {
+    public DataAndSelectionKeyPair removeDataFromBatch() {
         return dataList.removeFirst();
     }
 
@@ -40,5 +40,14 @@ public class Batch {
 
     public void clearBatch() {
         dataList.clear();
+    }
+
+    public Batch deepCopy() {
+        Batch deepCopiedBatch = new Batch(batchSize);
+        //The DataAndSelectionKeyPairs only need to be shallow copies
+        for (DataAndSelectionKeyPair pair : dataList) {
+            deepCopiedBatch.addDataToBatch(pair);
+        }
+        return deepCopiedBatch;
     }
 }

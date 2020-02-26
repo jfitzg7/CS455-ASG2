@@ -5,7 +5,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -16,7 +18,7 @@ public class Client {
 
     private Logger LOG = LogManager.getLogger(Client.class);
     private SocketChannel clientSocket;
-    private LinkedList<String> pendingHashes;
+    private LinkedList<byte[]> pendingHashes;
 
     public Client() {
         pendingHashes = new LinkedList<>();
@@ -80,11 +82,11 @@ public class Client {
     }
 
     public void startSendingMessagesToServer(int messageRate) {
-        (new Thread(new ClientSendMessageThread(clientSocket, messageRate))).start();
+        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, pendingHashes))).start();
     }
 
     private void handleServerResponse(SelectionKey key) {
-        ByteBuffer buffer = ByteBuffer.allocate(40);
+        ByteBuffer buffer = ByteBuffer.allocate(20);
         int bytesRead = 0;
         while(buffer.hasRemaining() && bytesRead != -1) {
             try {
@@ -93,7 +95,10 @@ public class Client {
                 e.printStackTrace();
             }
         }
-        String response = new String(buffer.array()).trim();
+        ((Buffer) buffer).rewind();
+        byte[] receivedData = new byte[20];
+        buffer.get(receivedData);
+        String response = Arrays.toString(receivedData);
         LOG.debug("Received a response from the server: " + response);
     }
 

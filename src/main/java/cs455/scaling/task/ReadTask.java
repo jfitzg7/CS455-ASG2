@@ -1,6 +1,7 @@
 package cs455.scaling.task;
 
 import cs455.scaling.util.Batch;
+import cs455.scaling.util.DataAndSelectionKeyPair;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,13 +70,15 @@ public class ReadTask implements Task {
                the interest set of this channel's key will not be updated if
                the selector is currently blocking */
             selector.wakeup();
+            DataAndSelectionKeyPair pair = new DataAndSelectionKeyPair(receivedData, key);
             synchronized(batch) {
-                if (!batch.isBatchFull()) {
-                    batch.addDataToBatch(receivedData);
+                if (batch.isBatchFull()) {
+                    Batch deepCopiedBatch = batch.deepCopy();
+                    batch.clearBatch();
+                    BatchTask batchTask = new BatchTask(deepCopiedBatch);
+                    threadPoolManager.addNewTaskToWorkList(batchTask);
                 }
-                else {
-
-                }
+                batch.addDataToBatch(pair);
             }
         }
     }
