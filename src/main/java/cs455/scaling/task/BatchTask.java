@@ -18,6 +18,7 @@ public class BatchTask implements Task {
     private Batch batch;
     private ThreadPoolManager threadPoolManager;
 
+
     public BatchTask(Batch batch, ThreadPoolManager threadPoolManager) {
         this.batch = batch;
         this.threadPoolManager = threadPoolManager;
@@ -25,7 +26,6 @@ public class BatchTask implements Task {
 
     @Override
     public void executeTask() {
-        LOG.info("Restarting the batch timer");
         threadPoolManager.restartBatchTimer();
         LOG.info("Executing a batch task");
         int numberOfItemsInBatch = batch.sizeOfDataList();
@@ -41,7 +41,9 @@ public class BatchTask implements Task {
             } catch (IOException e) {
                 LOG.error("An error occurred while writing to the channel", e);
             }
-
+            LOG.info("The hashed data has been sent back to the client");
+            threadPoolManager.statisticsGatherer.incrementClientThroughPut(pair.key);
+            LOG.info("The client's through put has been incremented");
         }
     }
 }
