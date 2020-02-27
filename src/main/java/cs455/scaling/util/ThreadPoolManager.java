@@ -18,6 +18,7 @@ public class ThreadPoolManager {
     private Batch batch;
     private final int batchTimeout;
     private Timer timer;
+    public ServerSideStatisticsGatherer statisticsGatherer;
 
     public ThreadPoolManager(int threadPoolSize, int batchSize, int batchTimeout) {
         this.workList = new LinkedList<>();
@@ -25,6 +26,7 @@ public class ThreadPoolManager {
         this.batch = new Batch(batchSize);
         this.batchTimeout = batchTimeout;
         this.timer = new Timer();
+        this.statisticsGatherer = new ServerSideStatisticsGatherer();
     }
 
     public void startThreadsInThreadPool() {
@@ -56,7 +58,7 @@ public class ThreadPoolManager {
     }
 
     public void restartBatchTimer() {
-        LOG.debug("Restarting the batch timer");
+        LOG.info("Restarting the batch timer");
         TimerTask timerTask = createNewBatchTimerTask();
         this.timer.cancel();
         this.timer = new Timer();
