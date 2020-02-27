@@ -1,7 +1,5 @@
 package cs455.scaling.task;
 
-import cs455.scaling.server.Server;
-import cs455.scaling.util.Batch;
 import cs455.scaling.util.DataAndSelectionKeyPair;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
@@ -21,14 +19,11 @@ public class ReadTask implements Task {
 
     private SelectionKey key;
     private Selector selector;
-    private Batch batch;
     private ThreadPoolManager threadPoolManager;
-    private Server server;
 
-    public ReadTask(Selector selector, SelectionKey key, Batch batch, ThreadPoolManager threadPoolManager, Server server) {
+    public ReadTask(Selector selector, SelectionKey key, ThreadPoolManager threadPoolManager) {
         this.key = key;
         this.selector = selector;
-        this.batch = batch;
         this.threadPoolManager = threadPoolManager;
     }
 
@@ -73,15 +68,7 @@ public class ReadTask implements Task {
                the selector is currently blocking */
             selector.wakeup();
             DataAndSelectionKeyPair pair = new DataAndSelectionKeyPair(receivedData, key);
-            synchronized(batch) {
-                if (batch.isBatchFull()) {
-                    Batch deepCopiedBatch = batch.deepCopy();
-                    batch.clearBatch();
-                    BatchTask batchTask = new BatchTask(deepCopiedBatch, server);
-                    threadPoolManager.addNewTaskToWorkList(batchTask);
-                }
-                batch.addDataToBatch(pair);
-            }
+            threadPoolManager.addNewDataAndSelectionKeyPairToBatch(pair);
         }
     }
 }

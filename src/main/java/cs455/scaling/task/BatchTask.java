@@ -1,9 +1,9 @@
 package cs455.scaling.task;
 
-import cs455.scaling.server.Server;
 import cs455.scaling.util.Batch;
 import cs455.scaling.util.DataAndSelectionKeyPair;
 import cs455.scaling.util.Hashing;
+import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,17 +15,18 @@ public class BatchTask implements Task {
 
     private Logger LOG = LogManager.getLogger(BatchTask.class);
 
-    private final Batch batch;
-    private Server server;
+    private Batch batch;
+    private ThreadPoolManager threadPoolManager;
 
-    public BatchTask(Batch batch, Server server) {
+    public BatchTask(Batch batch, ThreadPoolManager threadPoolManager) {
         this.batch = batch;
-        this.server = server;
+        this.threadPoolManager = threadPoolManager;
     }
 
     @Override
     public void executeTask() {
-        server.restartBatchTimer();
+        LOG.info("Restarting the batch timer");
+        threadPoolManager.restartBatchTimer();
         LOG.info("Executing a batch task");
         int numberOfItemsInBatch = batch.sizeOfDataList();
         for (int i=0; i < numberOfItemsInBatch; i++) {

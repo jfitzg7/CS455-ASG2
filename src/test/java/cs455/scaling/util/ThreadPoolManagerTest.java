@@ -1,12 +1,8 @@
 package cs455.scaling.util;
 
-import cs455.scaling.task.BatchTask;
 import cs455.scaling.task.TestTask;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +12,7 @@ class ThreadPoolManagerTest {
 
     @BeforeEach
     public void initialize() {
-        threadPoolManager = new ThreadPoolManager(10);
+        threadPoolManager = new ThreadPoolManager(10, 0, 0);
         threadPoolManager.startThreadsInThreadPool();
     }
 
