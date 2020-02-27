@@ -37,7 +37,7 @@ public class ClientSendMessageThread implements Runnable {
                     pendingHashes.addLast(hash);
                 }
                 ByteBuffer sendBuffer = ByteBuffer.wrap(randomData);
-                LOG.debug("Sending message to the server...");
+                LOG.info("Sending message to the server...");
                 while (sendBuffer.hasRemaining()) {
                     try {
                         clientSocket.write(sendBuffer);
@@ -45,7 +45,7 @@ public class ClientSendMessageThread implements Runnable {
                         LOG.error("An error occurred while writing to the channel");
                     }
                 }
-                LOG.debug("A message has been sent to the the server.");
+                LOG.info("A message has been sent to the the server.");
                 try {
                     Thread.sleep(1000 / messageRate);
                 } catch (InterruptedException e) {

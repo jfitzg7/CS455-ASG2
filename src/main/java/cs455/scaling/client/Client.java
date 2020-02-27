@@ -45,9 +45,9 @@ public class Client {
     }
 
     public void establishSocketChannelWithServer(String hostname, int portNumber) throws IOException {
-        LOG.debug("Opening new socket channel");
+        LOG.info("Opening new socket channel with the server");
         clientSocket = SocketChannel.open(new InetSocketAddress(hostname, portNumber));
-        LOG.debug("Opened new socket channel");
+        LOG.info("Successfully opened new socket channel with the server");
     }
 
     public void configureClientToBeNonBlocking() throws IOException {
@@ -91,14 +91,15 @@ public class Client {
             try {
                 bytesRead = clientSocket.read(buffer);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error("An error occurred while reading a response from the server", e);
             }
         }
         ((Buffer) buffer).rewind();
         byte[] receivedData = new byte[20];
         buffer.get(receivedData);
         String response = Arrays.toString(receivedData);
-        LOG.debug("Received a response from the server: " + response);
+        LOG.info("Received a response from the server");
+        LOG.debug("Server response: " + response);
     }
 
 }

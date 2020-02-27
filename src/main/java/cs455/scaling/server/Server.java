@@ -21,7 +21,7 @@ public class Server {
     private static Logger LOG = LogManager.getLogger(Server.class);
 
     public static void main(String[] args) throws IOException {
-        ThreadPoolManager threadPoolManager = new ThreadPoolManager(10, 10, 10);
+        ThreadPoolManager threadPoolManager = new ThreadPoolManager(10, 10, 5);
         LOG.info("Starting the thread pool");
         threadPoolManager.startThreadsInThreadPool();
         LOG.info("Starting the batch timer");
