@@ -1,5 +1,6 @@
 package cs455.scaling.server;
 
+import cs455.scaling.task.BatchTask;
 import cs455.scaling.task.ReadTask;
 import cs455.scaling.task.RegisterTask;
 import cs455.scaling.util.Batch;
@@ -13,21 +14,38 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
 
     private static Logger LOG = LogManager.getLogger(Server.class);
 
-    private static Batch batch;
+    private Batch batch;
+    private ThreadPoolManager threadPoolManager;
+    private Timer timer;
+    private int batchTimeout;
+
+    public Server(ThreadPoolManager threadPoolManager, Batch batch, int batchTimeout) {
+        this.threadPoolManager = threadPoolManager;
+        this.batch = batch;
+        this.batchTimeout = batchTimeout;
+        this.timer = new Timer();
+    }
 
     public static void main(String[] args) throws IOException {
-        batch = new Batch(10);
+        Batch batch = new Batch(10);
         ThreadPoolManager threadPoolManager = new ThreadPoolManager(10);
         threadPoolManager.startThreadsInThreadPool();
+        Server server = new Server(threadPoolManager, batch, 5);
+
+        server.handleClientCommunication();
+    }
+
+    public void handleClientCommunication() throws IOException {
         Selector selector = Selector.open();
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
@@ -41,6 +59,8 @@ public class Server {
 
         //create reentrant lock for blocking when registering new client channels
         final ReentrantLock selectorLock = new ReentrantLock();
+
+        startBatchTimer();
 
         while(true) {
             LOG.debug("Waiting to acquire lock...");
@@ -81,7 +101,7 @@ public class Server {
                         LOG.debug("Removing read interest from a client channel");
                         key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                         LOG.debug("Constructing new ReadTask");
-                        ReadTask readTask = new ReadTask(selector, key, batch, threadPoolManager);
+                        ReadTask readTask = new ReadTask(selector, key, this.batch, threadPoolManager, this);
                         threadPoolManager.addNewTaskToWorkList(readTask);
                     }
 
@@ -89,5 +109,35 @@ public class Server {
                 }
             }
         }
+    }
+
+    public void startBatchTimer() {
+        TimerTask timerTask = createNewBatchTimerTask();
+        this.timer.schedule(timerTask, this.batchTimeout * 1000, this.batchTimeout * 1000);
+    }
+
+    public void restartBatchTimer() {
+        LOG.debug("Restarting the batch timer");
+        TimerTask timerTask = createNewBatchTimerTask();
+        this.timer.cancel();
+        this.timer = new Timer();
+        this.timer.schedule(timerTask, this.batchTimeout * 1000, this.batchTimeout * 1000);
+    }
+
+    private TimerTask createNewBatchTimerTask() {
+        Server server = this;
+        TimerTask timer = new TimerTask() {
+            @Override
+            public void run() {
+                LOG.debug("Timeout has expired, adding the batch to the task queue");
+                synchronized (batch) {
+                    Batch deepCopiedBatch = batch.deepCopy();
+                    batch.clearBatch();
+                    BatchTask batchTask = new BatchTask(deepCopiedBatch, server);
+                    threadPoolManager.addNewTaskToWorkList(batchTask);
+                }
+            }
+        };
+        return timer;
     }
 }
