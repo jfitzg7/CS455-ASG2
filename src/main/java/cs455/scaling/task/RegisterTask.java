@@ -1,6 +1,7 @@
 package cs455.scaling.task;
 
 import cs455.scaling.util.ServerSocketAttachment;
+import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,24 +20,28 @@ public class RegisterTask implements Task {
     private ServerSocketChannel serverSocket;
     private ServerSocketAttachment attachment;
     private final ReentrantLock selectorLock;
+    private ThreadPoolManager threadPoolManager;
 
-    public RegisterTask(Selector selector, ServerSocketChannel serverSocket, ServerSocketAttachment attachment, ReentrantLock selectorLock) {
+    public RegisterTask(Selector selector, ServerSocketChannel serverSocket, ServerSocketAttachment attachment, ReentrantLock selectorLock, ThreadPoolManager threadPoolManager) {
         this.selector = selector;
         this.serverSocket = serverSocket;
         this.attachment = attachment;
         this.selectorLock = selectorLock;
+        this.threadPoolManager = threadPoolManager;
     }
 
     @Override
     public void executeTask() {
         try {
             SocketChannel clientSocket = serverSocket.accept();
-            LOG.debug("Successfully established a new client socket channel");
+            LOG.info("Successfully established a new client socket channel");
             clientSocket.configureBlocking(false);
             selectorLock.lock();
             try {
                 selector.wakeup();
-                clientSocket.register(selector, SelectionKey.OP_READ);
+                SelectionKey newClientKey = clientSocket.register(selector, SelectionKey.OP_READ);
+                LOG.info("Adding new client SelectionKey to the statistics gatherer");
+                threadPoolManager.statisticsGatherer.addClient(newClientKey);
             } finally {
                 selectorLock.unlock();
             }
