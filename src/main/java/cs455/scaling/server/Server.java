@@ -26,6 +26,8 @@ public class Server {
         threadPoolManager.startThreadsInThreadPool();
         LOG.info("Starting the batch timer");
         threadPoolManager.startBatchTimer();
+        LOG.info("Starting the statistics gatherer");
+        threadPoolManager.statisticsGatherer.startStatisticsGathering();
 
         Selector selector = Selector.open();
 
@@ -68,7 +70,7 @@ public class Server {
                         ServerSocketAttachment attachment = (ServerSocketAttachment) key.attachment();
                         if (!attachment.isQueuedForAccept) {
                             LOG.info("Constructing new RegisterTask");
-                            RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock);
+                            RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock, threadPoolManager);
                             attachment.isQueuedForAccept = true;
                             threadPoolManager.addNewTaskToWorkList(registerTask);
                         } else {
