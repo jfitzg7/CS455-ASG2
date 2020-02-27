@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.Random;
 
