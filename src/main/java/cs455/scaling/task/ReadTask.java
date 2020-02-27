@@ -58,7 +58,7 @@ public class ReadTask implements Task {
             buffer.get(receivedData);
             BigInteger hashInt = new BigInteger(1, receivedData);
             String hashString = hashInt.toString(16);
-            LOG.debug("Data received from client channel: " + hashString);
+            //LOG.debug("Data received from client channel: " + hashString);
             LOG.info("Making client channel readable again...");
             LOG.debug("Interest set before: " + key.interestOps());
             key.interestOps(key.interestOps() | SelectionKey.OP_READ);
