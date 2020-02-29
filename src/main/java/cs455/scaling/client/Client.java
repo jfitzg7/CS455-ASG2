@@ -1,6 +1,7 @@
 package cs455.scaling.client;
 
 import cs455.scaling.util.ClientSendMessageThread;
+import cs455.scaling.util.ClientSideStatisticsGatherer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,9 +19,11 @@ public class Client {
     private Logger LOG = LogManager.getLogger(Client.class);
     private SocketChannel clientSocket;
     private LinkedList<byte[]> pendingHashes;
+    private ClientSideStatisticsGatherer statisticsGatherer;
 
     public Client() {
         pendingHashes = new LinkedList<>();
+        statisticsGatherer = new ClientSideStatisticsGatherer();
     }
 
     public static void main(String[] args) {
@@ -32,6 +35,7 @@ public class Client {
                 client.establishSocketChannelWithServer(hostName, portNumber);
                 client.configureClientToBeNonBlocking();
                 int messageRate = Integer.parseInt(args[2]);
+                client.statisticsGatherer.startStatisticsGathering();
                 client.startSendingMessagesToServer(messageRate);
                 client.listenForResponsesFromServer();
 
@@ -81,7 +85,7 @@ public class Client {
     }
 
     public void startSendingMessagesToServer(int messageRate) {
-        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, pendingHashes))).start();
+        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, pendingHashes, statisticsGatherer))).start();
     }
 
     private void handleServerResponse(SelectionKey key) {
@@ -94,6 +98,8 @@ public class Client {
                 LOG.error("An error occurred while reading a response from the server", e);
             }
         }
+        LOG.info("Incrementing the total received count");
+        statisticsGatherer.incrementTotalReceivedCount();
         ((Buffer) buffer).rewind();
         byte[] receivedData = new byte[20];
         buffer.get(receivedData);
