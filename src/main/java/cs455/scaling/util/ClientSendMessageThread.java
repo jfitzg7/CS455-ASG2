@@ -16,11 +16,13 @@ public class ClientSendMessageThread implements Runnable {
     private SocketChannel clientSocket;
     private final int messageRate;
     private LinkedList<byte[]> pendingHashes;
+    private ClientSideStatisticsGatherer statisticsGatherer;
 
-    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<byte[]> pendingHashes) {
+    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<byte[]> pendingHashes, ClientSideStatisticsGatherer statisticsGatherer) {
         this.clientSocket = clientSocket;
         this.messageRate = messageRate;
         this.pendingHashes = pendingHashes;
+        this.statisticsGatherer = statisticsGatherer;
     }
 
     @Override
@@ -45,6 +47,8 @@ public class ClientSendMessageThread implements Runnable {
                     }
                 }
                 LOG.info("A message has been sent to the the server.");
+                LOG.info("Incrementing the total sent count");
+                statisticsGatherer.incrementTotalSentCount();
                 try {
                     Thread.sleep(1000 / messageRate);
                 } catch (InterruptedException e) {
