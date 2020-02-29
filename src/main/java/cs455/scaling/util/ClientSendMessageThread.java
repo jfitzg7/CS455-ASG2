@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
@@ -15,10 +16,10 @@ public class ClientSendMessageThread implements Runnable {
 
     private SocketChannel clientSocket;
     private final int messageRate;
-    private LinkedList<byte[]> pendingHashes;
+    private LinkedList<String> pendingHashes;
     private ClientSideStatisticsGatherer statisticsGatherer;
 
-    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<byte[]> pendingHashes, ClientSideStatisticsGatherer statisticsGatherer) {
+    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<String> pendingHashes, ClientSideStatisticsGatherer statisticsGatherer) {
         this.clientSocket = clientSocket;
         this.messageRate = messageRate;
         this.pendingHashes = pendingHashes;
@@ -34,8 +35,10 @@ public class ClientSendMessageThread implements Runnable {
                 byte[] randomData = new byte[8000];
                 rand.nextBytes(randomData);
                 byte[] hash = Hashing.SHA1FromBytes(randomData);
+                BigInteger hashInt = new BigInteger(1, hash);
+                String hashString = hashInt.toString(16);
                 synchronized (pendingHashes) {
-                    pendingHashes.addLast(hash);
+                    pendingHashes.addLast(hashString);
                 }
                 ByteBuffer sendBuffer = ByteBuffer.wrap(randomData);
                 LOG.info("Sending message to the server...");
@@ -43,7 +46,7 @@ public class ClientSendMessageThread implements Runnable {
                     try {
                         clientSocket.write(sendBuffer);
                     } catch (IOException e) {
-                        LOG.error("An error occurred while writing to the channel");
+                        LOG.error("An error occurred while writing to the channel", e);
                     }
                 }
                 LOG.info("A message has been sent to the the server.");
@@ -52,7 +55,7 @@ public class ClientSendMessageThread implements Runnable {
                 try {
                     Thread.sleep(1000 / messageRate);
                 } catch (InterruptedException e) {
-                    LOG.error("The message rate was interrupted");
+                    LOG.error("The message rate was interrupted", e);
                 }
             }
         }
