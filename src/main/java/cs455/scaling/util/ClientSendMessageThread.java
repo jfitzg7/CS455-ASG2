@@ -1,5 +1,6 @@
 package cs455.scaling.util;
 
+import cs455.scaling.client.Client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,14 +17,12 @@ public class ClientSendMessageThread implements Runnable {
 
     private SocketChannel clientSocket;
     private final int messageRate;
-    private LinkedList<String> pendingHashes;
-    private ClientSideStatisticsGatherer statisticsGatherer;
+    private final Client client;
 
-    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, LinkedList<String> pendingHashes, ClientSideStatisticsGatherer statisticsGatherer) {
+    public ClientSendMessageThread(SocketChannel clientSocket, int messageRate, Client client) {
         this.clientSocket = clientSocket;
         this.messageRate = messageRate;
-        this.pendingHashes = pendingHashes;
-        this.statisticsGatherer = statisticsGatherer;
+        this.client = client;
     }
 
     @Override
@@ -37,9 +36,7 @@ public class ClientSendMessageThread implements Runnable {
                 byte[] hash = Hashing.SHA1FromBytes(randomData);
                 BigInteger hashInt = new BigInteger(1, hash);
                 String hashString = hashInt.toString(16);
-                synchronized (pendingHashes) {
-                    pendingHashes.addLast(hashString);
-                }
+                client.addHashToPendingHashes(hashString);
                 ByteBuffer sendBuffer = ByteBuffer.wrap(randomData);
                 LOG.info("Sending message to the server...");
                 while (sendBuffer.hasRemaining()) {
@@ -51,7 +48,7 @@ public class ClientSendMessageThread implements Runnable {
                 }
                 LOG.info("A message has been sent to the the server.");
                 LOG.info("Incrementing the total sent count");
-                statisticsGatherer.incrementTotalSentCount();
+                client.incrementTotalSentCount();
                 try {
                     Thread.sleep(1000 / messageRate);
                 } catch (InterruptedException e) {
