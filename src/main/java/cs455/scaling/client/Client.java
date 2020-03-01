@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -18,7 +19,7 @@ public class Client {
 
     private Logger LOG = LogManager.getLogger(Client.class);
     private SocketChannel clientSocket;
-    private LinkedList<byte[]> pendingHashes;
+    private LinkedList<String> pendingHashes;
     private ClientSideStatisticsGatherer statisticsGatherer;
 
     public Client() {
@@ -85,7 +86,7 @@ public class Client {
     }
 
     public void startSendingMessagesToServer(int messageRate) {
-        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, pendingHashes, statisticsGatherer))).start();
+        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, this))).start();
     }
 
     private void handleServerResponse(SelectionKey key) {
@@ -99,13 +100,44 @@ public class Client {
             }
         }
         LOG.info("Incrementing the total received count");
-        statisticsGatherer.incrementTotalReceivedCount();
+        incrementTotalReceivedCount();
         ((Buffer) buffer).rewind();
         byte[] receivedData = new byte[20];
         buffer.get(receivedData);
-        String response = Arrays.toString(receivedData);
+        //convert byte array into a string representation of the hash
+        BigInteger hashInt = new BigInteger(1, receivedData);
+        String hashString = hashInt.toString(16);
         LOG.info("Received a response from the server");
-        LOG.debug("Server response: " + response);
+        LOG.debug("Server response: " + hashString);
+        removeHashFromPendingHashes(hashString);
+    }
+
+    private boolean removeHashFromPendingHashes(String hash) {
+        synchronized (pendingHashes) {
+            if (pendingHashes.contains(hash)) {
+                pendingHashes.removeFirstOccurrence(hash);
+                LOG.info("Removed a SHA1 hash from the pending hash list");
+                return true;
+            }
+            else {
+                LOG.warn("Received a SHA1 hash acknowledgement from the server that is not in the pending hash list");
+                return false;
+            }
+        }
+    }
+
+    public void addHashToPendingHashes(String hash) {
+        synchronized (pendingHashes) {
+            pendingHashes.addLast(hash);
+        }
+    }
+
+    private void incrementTotalReceivedCount() {
+        statisticsGatherer.incrementTotalReceivedCount();
+    }
+
+    public void incrementTotalSentCount() {
+        statisticsGatherer.incrementTotalSentCount();
     }
 
 }
