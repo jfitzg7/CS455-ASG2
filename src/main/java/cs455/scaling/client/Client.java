@@ -109,14 +109,26 @@ public class Client {
         String hashString = hashInt.toString(16);
         LOG.info("Received a response from the server");
         LOG.debug("Server response: " + hashString);
+        removeHashFromPendingHashes(hashString);
+    }
+
+    private boolean removeHashFromPendingHashes(String hash) {
         synchronized (pendingHashes) {
-            if (pendingHashes.contains(hashString)) {
-                pendingHashes.removeFirstOccurrence(hashString);
+            if (pendingHashes.contains(hash)) {
+                pendingHashes.removeFirstOccurrence(hash);
                 LOG.info("Removed a SHA1 hash from the pending hash list");
+                return true;
             }
             else {
                 LOG.warn("Received a SHA1 hash acknowledgement from the server that is not in the pending hash list");
+                return false;
             }
+        }
+    }
+
+    public void addHashToPendingHashes(String hash) {
+        synchronized (pendingHashes) {
+            pendingHashes.addLast(hash);
         }
     }
 
