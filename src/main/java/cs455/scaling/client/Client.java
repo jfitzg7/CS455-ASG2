@@ -86,7 +86,7 @@ public class Client {
     }
 
     public void startSendingMessagesToServer(int messageRate) {
-        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, pendingHashes, statisticsGatherer))).start();
+        (new Thread(new ClientSendMessageThread(clientSocket, messageRate, this))).start();
     }
 
     private void handleServerResponse(SelectionKey key) {
@@ -100,7 +100,7 @@ public class Client {
             }
         }
         LOG.info("Incrementing the total received count");
-        statisticsGatherer.incrementTotalReceivedCount();
+        incrementTotalReceivedCount();
         ((Buffer) buffer).rewind();
         byte[] receivedData = new byte[20];
         buffer.get(receivedData);
@@ -130,6 +130,14 @@ public class Client {
         synchronized (pendingHashes) {
             pendingHashes.addLast(hash);
         }
+    }
+
+    private void incrementTotalReceivedCount() {
+        statisticsGatherer.incrementTotalReceivedCount();
+    }
+
+    public void incrementTotalSentCount() {
+        statisticsGatherer.incrementTotalSentCount();
     }
 
 }
