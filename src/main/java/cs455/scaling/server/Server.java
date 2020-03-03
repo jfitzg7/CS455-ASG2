@@ -79,7 +79,7 @@ public class Server {
                             LOG.info("Constructing new RegisterTask");
                             RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock, threadPoolManager);
                             attachment.isQueuedForAccept = true;
-                            threadPoolManager.addNewTaskToWorkList(registerTask);
+                            threadPoolManager.addNewTaskToWorkQueue(registerTask);
                         } else {
                             LOG.warn("The server socket is already trying to accept a connection!");
                         }
@@ -90,7 +90,7 @@ public class Server {
                         key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                         LOG.info("Constructing new ReadTask");
                         ReadTask readTask = new ReadTask(selector, key, threadPoolManager);
-                        threadPoolManager.addNewTaskToWorkList(readTask);
+                        threadPoolManager.addNewTaskToWorkQueue(readTask);
                     }
 
                     iter.remove();

@@ -2,7 +2,7 @@ package cs455.scaling.util;
 
 import cs455.scaling.task.Task;
 
-import java.util.LinkedList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ThreadPool {
     private final WorkerThread[] workerThreads;
@@ -11,11 +11,10 @@ public class ThreadPool {
         workerThreads = new WorkerThread[threadPoolSize];
     }
 
-    public void initializeWorkerThreads(LinkedList<Task> taskList) {
+    public void initializeWorkerThreads(LinkedBlockingQueue<Task> workQueue) {
         for (int i = 0; i < workerThreads.length; i++) {
-            workerThreads[i] = new WorkerThread(taskList);
+            workerThreads[i] = new WorkerThread(workQueue);
             workerThreads[i].start();
         }
     }
-
 }
