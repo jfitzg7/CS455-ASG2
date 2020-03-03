@@ -19,7 +19,7 @@ public class Client {
 
     private Logger LOG = LogManager.getLogger(Client.class);
     private SocketChannel clientSocket;
-    private LinkedList<String> pendingHashes;
+    private final LinkedList<String> pendingHashes;
     private ClientSideStatisticsGatherer statisticsGatherer;
 
     public Client() {
@@ -39,7 +39,6 @@ public class Client {
                 client.statisticsGatherer.startStatisticsGathering();
                 client.startSendingMessagesToServer(messageRate);
                 client.listenForResponsesFromServer();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,7 +71,7 @@ public class Client {
             while(iter.hasNext()) {
                 SelectionKey key = iter.next();
 
-                if (key.isValid() == false) {
+                if (!key.isValid()) {
                     continue;
                 }
 
