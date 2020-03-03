@@ -39,7 +39,7 @@ public class Server {
         Selector selector = Selector.open();
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        serverSocket.bind(new InetSocketAddress(7000));
+        serverSocket.bind(new InetSocketAddress(portNumber));
         serverSocket.configureBlocking(false);
 
         SelectionKey serverKey = serverSocket.register(selector, SelectionKey.OP_ACCEPT);
