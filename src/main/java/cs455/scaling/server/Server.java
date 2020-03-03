@@ -21,7 +21,14 @@ public class Server {
     private static Logger LOG = LogManager.getLogger(Server.class);
 
     public static void main(String[] args) throws IOException {
-        ThreadPoolManager threadPoolManager = new ThreadPoolManager(10, 10, 5);
+        //parse command-line arguments
+        int portNumber = Integer.parseInt(args[0]);
+        int threadPoolSize = Integer.parseInt(args[1]);
+        int batchSize = Integer.parseInt(args[2]);
+        int batchTime = Integer.parseInt(args[3]);
+
+        //start thread pool manager
+        ThreadPoolManager threadPoolManager = new ThreadPoolManager(threadPoolSize, batchSize, batchTime);
         LOG.info("Starting the thread pool");
         threadPoolManager.startThreadsInThreadPool();
         LOG.info("Starting the batch timer");
@@ -32,7 +39,7 @@ public class Server {
         Selector selector = Selector.open();
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        serverSocket.bind(new InetSocketAddress("localhost", 7000));
+        serverSocket.bind(new InetSocketAddress("localhost", portNumber));
         serverSocket.configureBlocking(false);
 
         SelectionKey serverKey = serverSocket.register(selector, SelectionKey.OP_ACCEPT);
