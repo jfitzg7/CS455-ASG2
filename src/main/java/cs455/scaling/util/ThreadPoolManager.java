@@ -5,23 +5,23 @@ import cs455.scaling.task.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ThreadPoolManager {
 
     private Logger LOG = LogManager.getLogger(ThreadPoolManager.class);
 
     private final ThreadPool threadPool;
-    private final LinkedList<Task> workList;
+    private final LinkedBlockingQueue<Task> workQueue;
     private Batch batch;
     private final int batchTimeout;
     private Timer timer;
     public ServerSideStatisticsGatherer statisticsGatherer;
 
     public ThreadPoolManager(int threadPoolSize, int batchSize, int batchTimeout) {
-        this.workList = new LinkedList<>();
+        this.workQueue = new LinkedBlockingQueue<>();
         this.threadPool = new ThreadPool(threadPoolSize);
         this.batch = new Batch(batchSize);
         this.batchTimeout = batchTimeout;
@@ -30,13 +30,14 @@ public class ThreadPoolManager {
     }
 
     public void startThreadsInThreadPool() {
-        threadPool.initializeWorkerThreads(workList);
+        threadPool.initializeWorkerThreads(this.workQueue);
     }
 
-    public void addNewTaskToWorkList(Task task) {
-        synchronized (workList) {
-            workList.addLast(task);
-            workList.notify();
+    public void addNewTaskToWorkQueue(Task task) {
+        try {
+            workQueue.put(task);
+        } catch (InterruptedException e) {
+            LOG.error("An error occurred while adding a task to the work queue", e);
         }
     }
 
@@ -46,7 +47,7 @@ public class ThreadPoolManager {
                 Batch deepCopiedBatch = this.batch.deepCopy();
                 this.batch.clearBatch();
                 BatchTask batchTask = new BatchTask(deepCopiedBatch, this);
-                this.addNewTaskToWorkList(batchTask);
+                this.addNewTaskToWorkQueue(batchTask);
             }
             this.batch.addDataToBatch(pair);
         }
@@ -75,7 +76,7 @@ public class ThreadPoolManager {
                     Batch deepCopiedBatch = batch.deepCopy();
                     batch.clearBatch();
                     BatchTask batchTask = new BatchTask(deepCopiedBatch, threadPoolManager);
-                    addNewTaskToWorkList(batchTask);
+                    threadPoolManager.addNewTaskToWorkQueue(batchTask);
                 }
             }
         };
