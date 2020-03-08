@@ -2,7 +2,6 @@ package cs455.scaling.server;
 
 import cs455.scaling.task.ReadTask;
 import cs455.scaling.task.RegisterTask;
-import cs455.scaling.util.ServerSocketAttachment;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,9 +42,6 @@ public class Server {
         serverSocket.configureBlocking(false);
 
         SelectionKey serverKey = serverSocket.register(selector, SelectionKey.OP_ACCEPT);
-
-        //Attach an object to help with managing queuing
-        serverKey.attach(new ServerSocketAttachment());
 
         //create reentrant lock for blocking when registering new client channels
         final ReentrantLock selectorLock = new ReentrantLock();
