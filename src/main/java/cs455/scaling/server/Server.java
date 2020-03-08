@@ -90,7 +90,7 @@ public class Server {
                         key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                         LOG.info("Constructing new ReadTask");
                         ReadTask readTask = new ReadTask(selector, key, threadPoolManager);
-                        threadPoolManager.addNewTaskToWorkQueue(readTask);
+                        threadPoolManager.addNewTaskToBatch(readTask);
                     }
 
                     iter.remove();

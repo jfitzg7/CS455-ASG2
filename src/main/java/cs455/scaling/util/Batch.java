@@ -1,19 +1,21 @@
 package cs455.scaling.util;
 
+import cs455.scaling.task.Task;
+
 import java.util.LinkedList;
 
 public class Batch {
-    private final LinkedList<DataAndSelectionKeyPair> dataList;
+    private final LinkedList<Task> taskList;
     private final int batchSize;
 
     public Batch(int batchSize) {
-        this.dataList = new LinkedList<>();
+        this.taskList = new LinkedList<>();
         this.batchSize = batchSize;
     }
 
-    public boolean addDataToBatch(DataAndSelectionKeyPair pair) {
-        if (dataList.size() < batchSize) {
-            dataList.addLast(pair);
+    public boolean addTaskToBatch(Task task) {
+        if (taskList.size() < batchSize) {
+            taskList.addLast(task);
             return true;
         }
         else {
@@ -21,16 +23,16 @@ public class Batch {
         }
     }
 
-    public int sizeOfDataList() {
-        return dataList.size();
+    public int sizeOfTaskList() {
+        return taskList.size();
     }
 
-    public DataAndSelectionKeyPair removeDataFromBatch() {
-        return dataList.removeFirst();
+    public Task removeTaskFromBatch() {
+        return taskList.removeFirst();
     }
 
     public boolean isBatchFull() {
-        if (dataList.size() >= batchSize) {
+        if (taskList.size() >= batchSize) {
             return true;
         }
         else {
@@ -39,14 +41,14 @@ public class Batch {
     }
 
     public void clearBatch() {
-        dataList.clear();
+        taskList.clear();
     }
 
     public Batch deepCopy() {
         Batch deepCopiedBatch = new Batch(batchSize);
-        //The DataAndSelectionKeyPairs only need to be shallow copies
-        for (DataAndSelectionKeyPair pair : dataList) {
-            deepCopiedBatch.addDataToBatch(pair);
+        //The Tasks only need to be shallow copies
+        for (Task task : taskList) {
+            deepCopiedBatch.addTaskToBatch(task);
         }
         return deepCopiedBatch;
     }

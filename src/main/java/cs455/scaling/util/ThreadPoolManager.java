@@ -41,15 +41,15 @@ public class ThreadPoolManager {
         }
     }
 
-    public void addNewDataAndSelectionKeyPairToBatch(DataAndSelectionKeyPair pair) {
+    public void addNewTaskToBatch(Task task) {
         synchronized (this.batch) {
+            this.batch.addTaskToBatch(task);
             if (this.batch.isBatchFull()) {
                 Batch deepCopiedBatch = this.batch.deepCopy();
                 this.batch.clearBatch();
                 BatchTask batchTask = new BatchTask(deepCopiedBatch, this);
                 this.addNewTaskToWorkQueue(batchTask);
             }
-            this.batch.addDataToBatch(pair);
         }
     }
 
