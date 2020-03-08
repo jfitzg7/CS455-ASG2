@@ -1,6 +1,5 @@
 package cs455.scaling.task;
 
-import cs455.scaling.util.ServerSocketAttachment;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,15 +16,15 @@ public class RegisterTask implements Task {
     private Logger LOG = LogManager.getLogger(RegisterTask.class);
 
     private final Selector selector;
-    private ServerSocketChannel serverSocket;
-    private ServerSocketAttachment attachment;
     private final ReentrantLock selectorLock;
-    private ThreadPoolManager threadPoolManager;
+    private final SelectionKey key;
+    private final ServerSocketChannel serverSocket;
+    private final ThreadPoolManager threadPoolManager;
 
-    public RegisterTask(Selector selector, ServerSocketChannel serverSocket, ServerSocketAttachment attachment, ReentrantLock selectorLock, ThreadPoolManager threadPoolManager) {
+    public RegisterTask(Selector selector, ReentrantLock selectorLock, SelectionKey key, ServerSocketChannel serverSocket, ThreadPoolManager threadPoolManager) {
         this.selector = selector;
         this.serverSocket = serverSocket;
-        this.attachment = attachment;
+        this.key = key;
         this.selectorLock = selectorLock;
         this.threadPoolManager = threadPoolManager;
     }
@@ -34,6 +33,7 @@ public class RegisterTask implements Task {
     public void executeTask() {
         try {
             SocketChannel clientSocket = serverSocket.accept();
+            key.interestOps(key.interestOps() | (SelectionKey.OP_ACCEPT));
             LOG.info("Successfully established a new client socket channel");
             clientSocket.configureBlocking(false);
             selectorLock.lock();
@@ -47,7 +47,6 @@ public class RegisterTask implements Task {
             }
             LOG.info("Successfully registered a new client socket channel!");
             LOG.debug("Selector keys = " + selector.keys());
-            attachment.isQueuedForAccept = false;
         } catch (IOException e) {
             LOG.error("An error occurred while handling the registration task.", e);
         }

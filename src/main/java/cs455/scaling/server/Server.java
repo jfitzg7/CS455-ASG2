@@ -2,7 +2,6 @@ package cs455.scaling.server;
 
 import cs455.scaling.task.ReadTask;
 import cs455.scaling.task.RegisterTask;
-import cs455.scaling.util.ServerSocketAttachment;
 import cs455.scaling.util.ThreadPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,9 +43,6 @@ public class Server {
 
         SelectionKey serverKey = serverSocket.register(selector, SelectionKey.OP_ACCEPT);
 
-        //Attach an object to help with managing queuing
-        serverKey.attach(new ServerSocketAttachment());
-
         //create reentrant lock for blocking when registering new client channels
         final ReentrantLock selectorLock = new ReentrantLock();
 
@@ -74,19 +70,15 @@ public class Server {
                     }
 
                     if (key.isAcceptable()) {
-                        ServerSocketAttachment attachment = (ServerSocketAttachment) key.attachment();
-                        if (!attachment.isQueuedForAccept) {
-                            LOG.info("Constructing new RegisterTask");
-                            RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock, threadPoolManager);
-                            attachment.isQueuedForAccept = true;
-                            threadPoolManager.addNewTaskToWorkQueue(registerTask);
-                        } else {
-                            LOG.warn("The server socket is already trying to accept a connection!");
-                        }
+                        //remove accept interest from the server channel's interest set
+                        key.interestOps(key.interestOps() & (~SelectionKey.OP_ACCEPT));
+                        LOG.info("Constructing new RegisterTask");
+                        RegisterTask registerTask = new RegisterTask(selector, selectorLock, key, serverSocket, threadPoolManager);
+                        threadPoolManager.addNewTaskToWorkQueue(registerTask);
                     }
 
                     if (key.isReadable()) {
-                        //remove read interest from the client channels interest set
+                        //remove read interest from the client channel's interest set
                         key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                         LOG.info("Constructing new ReadTask");
                         ReadTask readTask = new ReadTask(selector, key, threadPoolManager);
