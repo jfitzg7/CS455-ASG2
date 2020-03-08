@@ -74,19 +74,15 @@ public class Server {
                     }
 
                     if (key.isAcceptable()) {
-                        ServerSocketAttachment attachment = (ServerSocketAttachment) key.attachment();
-                        if (!attachment.isQueuedForAccept) {
-                            LOG.info("Constructing new RegisterTask");
-                            RegisterTask registerTask = new RegisterTask(selector, serverSocket, attachment, selectorLock, threadPoolManager);
-                            attachment.isQueuedForAccept = true;
-                            threadPoolManager.addNewTaskToWorkQueue(registerTask);
-                        } else {
-                            LOG.warn("The server socket is already trying to accept a connection!");
-                        }
+                        //remove accept interest from the server channel's interest set
+                        key.interestOps(key.interestOps() & (~SelectionKey.OP_ACCEPT));
+                        LOG.info("Constructing new RegisterTask");
+                        RegisterTask registerTask = new RegisterTask(selector, selectorLock, key, serverSocket, threadPoolManager);
+                        threadPoolManager.addNewTaskToWorkQueue(registerTask);
                     }
 
                     if (key.isReadable()) {
-                        //remove read interest from the client channels interest set
+                        //remove read interest from the client channel's interest set
                         key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                         LOG.info("Constructing new ReadTask");
                         ReadTask readTask = new ReadTask(selector, key, threadPoolManager);
