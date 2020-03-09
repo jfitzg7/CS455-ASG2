@@ -48,42 +48,50 @@ FILE/CLASS DESCRIPTIONS:
 
     cs455.scaling.client:
 
-        - Client:
+        - Client: The class executed on the client side. It handles sending and receiving messages with the Server class.
 
     cs455.scaling.server:
 
-        - Server:
+        - Server: The class executed on the server side. It manages connections with clients, reads data from connected clients,
+        and finally sends the hashed data back to the clients.
 
     cs455.scaling.task:
 
-        - Task:
+        - Task: An functional interface which all Task type objects must implement.
 
-        - BatchTask
+        - BatchTask: A task for executing Task objects in a Batch.
 
-        - ReadTask:
+        - ReadTask: A task for reading data, and subsequently hashing the data, from a specific client.
 
-        - RegisterTask:
+        - RegisterTask: A task for registering a new client with the selector.
 
-        - WriteTask:
+        - WriteTask: A task for sending the hashed data back to the client.
 
-        - TestTask:
+        - TestTask: A task for testing functionality of the thread pool.
 
     cs455.scaling.util:
 
-        - Batch:
+        - Batch: A class that holds a certain amount of Task objects before being added to the work queue.
+        This class is intended to reduce context switching.
 
-        - ClientSendMessageThread:
+        - ClientSendMessageThread: The thread on the client side that sends a specific amount of messages to the
+        server per second.
 
-        - ClientSideStatisticsGatherer:
+        - ClientSideStatisticsGatherer: Handles statistics gathering on the client side, counts total sent and received
+        messages in the past 20 seconds.
 
-        - ServerSideStatisticsGatherer:
+        - ServerSideStatisticsGatherer: Handles statistics gathering for the past 20 seconds on the server side. It
+        counts total messages processed per second, the total number of active clients, the average number of messages
+        processed per second, and the the standard deviation of the messages processed per second.
 
-        - Hashing:
+        - Hashing: Defines a static method intended for converting the 8KB messages into a SHA1 hashed byte[].
 
-        - HashAndSelectionKeyPair:
+        - HashAndSelectionKeyPair: Defines a hash byte[] and a SelectionKey so that the WriteTask knows what to send
+        and to which specific client it needs to send to.
 
-        - ThreadPoolManager:
+        - ThreadPoolManager: Contains the thread pool of worker threads, the work queue, and a Batch object which is added
+        to the work queue once it reaches the batch size or the batch time is exceeded.
 
-        - ThreadPool:
+        - ThreadPool: Contains a method for starting up the WorkerThreads in the thread pool.
 
-        - WorkerThread:
+        - WorkerThread: The threads comprising the thread pool. Executes Task objects that are added to the work queue.
