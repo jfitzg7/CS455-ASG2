@@ -24,7 +24,7 @@ public class Server {
         int portNumber = Integer.parseInt(args[0]);
         int threadPoolSize = Integer.parseInt(args[1]);
         int batchSize = Integer.parseInt(args[2]);
-        int batchTime = Integer.parseInt(args[3]);
+        double batchTime = Double.parseDouble(args[3]);
 
         //start thread pool manager
         ThreadPoolManager threadPoolManager = new ThreadPoolManager(threadPoolSize, batchSize, batchTime);
