@@ -48,6 +48,7 @@ public class ReadTask implements Task {
         if (bytesRead == -1) {
             try {
                 clientChannel.close();
+                threadPoolManager.statisticsGatherer.removeClient(key);
             } catch (IOException e) {
                 LOG.error("An error occurred while trying to close the client channel", e);
             }
