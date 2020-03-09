@@ -3,7 +3,13 @@ Date: 3/8/2020
 Assignment 2: Scalable Server Design: Using Thread Pools & Micro-Batching
 to Manage and Load Balance Active Network Connections
 
+
 HOW TO BUILD:
+
+1. Stay in the same directory where the tar file was unpacked.
+
+2. Execute 'gradle build' at the command line to build the project and create the build directory.
+    - Alternatively, you can run './gradlew build' to use the gradle wrapper instead.
 
 
 HOW TO RUN THE SERVER:
@@ -15,6 +21,7 @@ HOW TO RUN THE SERVER:
         - This will execute the server on port 7000, listening on any IP address (0.0.0.0), with 12 threads in the thread pool,
         a batch size of 10, and a batch time of 2.5 seconds.
 
+
 HOW TO RUN THE CLIENT:
 
 1. Make sure you are in the same directory where you originally built the project.
@@ -23,6 +30,7 @@ HOW TO RUN THE CLIENT:
     - Example: java -cp build/libs/ASG2-1.0.jar cs455.scaling.client.Client denver.cs.colostate.edu 7000 4
         - This will execute a client that will try to connect to a server that is running on the denver machine
         on port 7000. If it successfully connects to the server, then it will start sending messages at the specified rate.
+
 
 OVERVIEW:
 
