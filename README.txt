@@ -8,6 +8,12 @@ HOW TO BUILD:
 
 HOW TO RUN THE SERVER:
 
+1. After building the project, stay in the same directory where you executed the build command to keep the classpath consistent
+
+2. execute the command: java -cp build/libs/ASG2-1.0.jar cs455.scaling.server.Server portnum thread-pool-size batch-size batch-time
+    - Example: java -cp build/libs/ASG2-1.0.jar cs455.scaling.server.Server 7000 12 10 2.5
+        - This will execute the server on port 7000, listening on any IP address (0.0.0.0), with 12 threads in the thread pool,
+        a batch size of 10, and a batch time of 2.5 seconds.
 
 HOW TO RUN THE CLIENT:
 
