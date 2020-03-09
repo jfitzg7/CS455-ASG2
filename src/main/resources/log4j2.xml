@@ -9,7 +9,7 @@
         </File>
     </Appenders>
     <Loggers>
-        <Root level="debug">
+        <Root level="off">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>
