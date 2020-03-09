@@ -99,7 +99,6 @@ public class Client {
             }
         }
         LOG.info("Incrementing the total received count");
-        incrementTotalReceivedCount();
         ((Buffer) buffer).rewind();
         byte[] receivedData = new byte[20];
         buffer.get(receivedData);
@@ -108,7 +107,9 @@ public class Client {
         String hashString = hashInt.toString(16);
         LOG.info("Received a response from the server");
         LOG.debug("Server response: " + hashString);
-        removeHashFromPendingHashes(hashString);
+        if(removeHashFromPendingHashes(hashString)) {
+            incrementTotalReceivedCount();
+        }
     }
 
     private boolean removeHashFromPendingHashes(String hash) {

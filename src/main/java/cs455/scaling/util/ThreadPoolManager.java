@@ -16,11 +16,11 @@ public class ThreadPoolManager {
     private final ThreadPool threadPool;
     private final LinkedBlockingQueue<Task> workQueue;
     private Batch batch;
-    private final int batchTimeout;
+    private final double batchTimeout;
     private Timer timer;
     public ServerSideStatisticsGatherer statisticsGatherer;
 
-    public ThreadPoolManager(int threadPoolSize, int batchSize, int batchTimeout) {
+    public ThreadPoolManager(int threadPoolSize, int batchSize, double batchTimeout) {
         this.workQueue = new LinkedBlockingQueue<>();
         this.threadPool = new ThreadPool(threadPoolSize);
         this.batch = new Batch(batchSize);
@@ -55,7 +55,8 @@ public class ThreadPoolManager {
 
     public void startBatchTimer() {
         TimerTask timerTask = createNewBatchTimerTask();
-        this.timer.schedule(timerTask, this.batchTimeout * 1000, this.batchTimeout * 1000);
+        long batchTimeoutInMilliseconds = Math.round(this.batchTimeout * 1000);
+        this.timer.schedule(timerTask, batchTimeoutInMilliseconds, batchTimeoutInMilliseconds);
     }
 
     public void restartBatchTimer() {
@@ -63,7 +64,8 @@ public class ThreadPoolManager {
         TimerTask timerTask = createNewBatchTimerTask();
         this.timer.cancel();
         this.timer = new Timer();
-        this.timer.schedule(timerTask, this.batchTimeout * 1000, this.batchTimeout * 1000);
+        long batchTimeoutInMilliseconds = Math.round(this.batchTimeout * 1000);
+        this.timer.schedule(timerTask, batchTimeoutInMilliseconds, batchTimeoutInMilliseconds);
     }
 
     private TimerTask createNewBatchTimerTask() {
