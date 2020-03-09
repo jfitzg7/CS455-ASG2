@@ -101,3 +101,11 @@ FILE/CLASS DESCRIPTIONS:
         - ThreadPool: Contains a method for starting up the WorkerThreads in the thread pool.
 
         - WorkerThread: The threads comprising the thread pool. Executes Task objects that are added to the work queue.
+
+    src/main/resources
+
+        - log4j2.xml: configuration file for log4j.
+
+        - machine_list: list of machines in the CS120 lab to be used with the startup_script.sh
+
+        - startup_script.sh: a script for automatically starting up clients to connect to a server.
