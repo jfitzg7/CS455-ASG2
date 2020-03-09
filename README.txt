@@ -8,7 +8,7 @@ HOW TO BUILD:
 
 HOW TO RUN THE SERVER:
 
-1. After building the project, stay in the same directory where you executed the build command to keep the classpath consistent
+1. After building the project, stay in the same directory where you executed the build command to keep the classpath consistent.
 
 2. execute the command: java -cp build/libs/ASG2-1.0.jar cs455.scaling.server.Server portnum thread-pool-size batch-size batch-time
     - Example: java -cp build/libs/ASG2-1.0.jar cs455.scaling.server.Server 7000 12 10 2.5
@@ -17,6 +17,12 @@ HOW TO RUN THE SERVER:
 
 HOW TO RUN THE CLIENT:
 
+1. Make sure you are in the same directory where you originally built the project.
+
+2. execute the command: java -cp build/libs/ASG2-1.0.jar cs455.scaling.client.Client server-host server-port message-rate
+    - Example: java -cp build/libs/ASG2-1.0.jar cs455.scaling.client.Client denver.cs.colostate.edu 7000 4
+        - This will execute a client that will try to connect to a server that is running on the denver machine
+        on port 7000. If it successfully connects to the server, then it will start sending messages at the specified rate.
 
 OVERVIEW:
 
