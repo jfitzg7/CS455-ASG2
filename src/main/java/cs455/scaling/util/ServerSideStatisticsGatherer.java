@@ -21,6 +21,10 @@ public class ServerSideStatisticsGatherer {
         individualClientThroughPuts.put(key, 0);
     }
 
+    public synchronized void removeClient(SelectionKey key) {
+        individualClientThroughPuts.remove(key);
+    }
+
     public synchronized void incrementClientThroughPut(SelectionKey key) {
         int currentThroughPut = individualClientThroughPuts.get(key);
         individualClientThroughPuts.put(key, currentThroughPut + 1);
